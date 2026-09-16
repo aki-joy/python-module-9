@@ -23,9 +23,9 @@ def create_instance() -> SpaceStation:
             crew_size=6,
             power_level=85.5,
             oxygen_level=92.3,
-            last_maintenance="2026-09-09",
+            last_maintenance=datetime(2026, 9, 9),
             is_operational=False,
-            notes="hello"
+            notes="hello",
         )
 
     except ValidationError as e:
@@ -43,9 +43,9 @@ def create_invalid_instance() -> SpaceStation:
             crew_size=21,
             power_level=85.5,
             oxygen_level=92.3,
-            last_maintenance="2026-09-09",
+            last_maintenance=datetime(2026, 9, 9),
             is_operational=False,
-            notes=None
+            notes=None,
         )
     except ValidationError as e:
         for error in e.errors():
