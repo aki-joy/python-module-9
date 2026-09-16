@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, model_validator, ValidationError
 from enum import Enum
 from datetime import datetime
+import sys
 import random
 
 class Rank(str, Enum):
@@ -58,40 +59,77 @@ class SpaceMission(BaseModel):
 
 def create_crew(name: str, rank: Rank, specialization:str, experience: int) -> CrewMember:
 
-    crew = CrewMember(
-        member_id="000",
-        name=name,
-        rank=rank,
-        age=random.randint(18, 80),
-        specialization=specialization,
-        years_experience=experience,
-        is_active=True
-    )
+    try:
+        crew = CrewMember(
+            member_id="000",
+            name=name,
+            rank=rank,
+            age=random.randint(18, 80),
+            specialization=specialization,
+            years_experience=experience,
+            is_active=True
+        )
 
+    except ValidationError as e:
+        for error in e.errors():
+            print(error["msg"])
+        sys.exit(1)
     return crew
 
 
 def create_mission(crews: list[CrewMember]) -> SpaceMission:
-    mission = SpaceMission(
-        mission_id="M2024_MARS",
-        mission_name="Mars Colony Establishment",
-        destination="MARS",
-        duration_days=900,
-        budget_millions=2500.0,
-        crew = crews,
-        mission_status="planned"
+    try:
+        mission = SpaceMission(
+            mission_id="M2024_MARS",
+            mission_name="Mars Colony Establishment",
+            destination="MARS",
+            launch_date=datetime.now(),
+            duration_days=900,
+            budget_millions=2500.0,
+            crew = crews,
+            mission_status="planned"
+        )
+
+    except ValidationError as e:
+        for error in e.errors():
+            print(error["msg"])
+        sys.exit(1)
+    return mission
+
+
+def show_info(mission: SpaceMission) -> None:
+    print(
+        f"Mission: {mission.mission_name}\n"
+        f"ID: {mission.mission_id}\n"
+        f"Destination: {mission.destination}\n"
+        f"Duration: {mission.duration_days} days\n"
+        f"Budget: ${mission.budget_millions}M\n"
+        f"Crew size: {len(mission.crew)}\n"
+        "Crew members:"
     )
+
+    for member in mission.crew:
+        print(f" - {member.name} ({member.rank.value}) - {member.specialization}")
 
 
 if __name__ =="__main__":
-    crews: list[CrewMember] = None
+    print("Space Mission Crew Validation")
 
-    crew = create_crew("Sarah Conner", "commander", "Mission command", 10)
-    crews.append(crew)
-    crew = create_crew("Jhon Smith", "lieutenant", "Navigation", 5)
-    crews.append(crew)
-    crew = create_crew("Alice Johnson", "officer", "Engineering", 3)
-    crews.append(crew)
+    crews: list[CrewMember] = []
 
+    crew1 = create_crew("Sarah Conner", "commander", "Mission command", 10)
+    crews.append(crew1)
+    crew2 = create_crew("Jhon Smith", "lieutenant", "Navigation", 5)
+    crews.append(crew2)
+    crew3 = create_crew("Alice Johnson", "officer", "Engineering", 3)
+    crews.append(crew3)
+    print("=======================================")
+    print("Valid mission created")
     mission = create_mission(crews)
-    
+    show_info(mission)
+
+    print("\n=======================================")
+    print("Expected validation error:")
+    crews.pop(0)
+    invalid_mission = create_mission(crews)
+    show_info(invalid_mission)
