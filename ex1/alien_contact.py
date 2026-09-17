@@ -2,7 +2,6 @@ from pydantic import BaseModel, Field, model_validator, ValidationError
 from enum import Enum
 from datetime import datetime
 from typing import Optional
-import sys
 
 
 class ContactType(str, Enum):
@@ -28,11 +27,11 @@ class AlienContact(BaseModel):
         if not self.contact_id.startswith("AC"):
             raise ValueError("Contact ID must start with 'AC'")
         if self.contact_type == ContactType.physical and not self.is_verified:
-            raise ValueError("Physical contact reports must be verified")
-        if (
-            self.contact_type == ContactType.telepathic
-            and self.witness_count < 3
-        ):
+            raise ValueError(
+                "Physical contact reports must be verified"
+                )
+        if (self.contact_type == ContactType.telepathic
+                and self.witness_count < 3):
             raise ValueError(
                 "Telepathic contact requires at least 3 witnesses"
                 )
@@ -43,45 +42,33 @@ class AlienContact(BaseModel):
 
 
 def create_instance() -> AlienContact:
-    try:
-        aliencontact = AlienContact(
-            contact_id="AC_2024_001",
-            timestamp=datetime(2024, 1, 1),
-            location="Area 51, Nevada",
-            contact_type=ContactType.radio,
-            signal_strength=8.5,
-            duration_minutes=45,
-            witness_count=5,
-            message_received="Greetings from Zeta Reticuli",
-            is_verified=False,
-        )
-
-    except ValidationError as e:
-        for error in e.errors():
-            print(error["msg"])
-        sys.exit(1)
+    aliencontact = AlienContact(
+        contact_id="AC_2024_001",
+        timestamp=datetime(2024, 1, 1),
+        location="Area 51, Nevada",
+        contact_type=ContactType.radio,
+        signal_strength=8.5,
+        duration_minutes=45,
+        witness_count=5,
+        message_received="Greetings from Zeta Reticuli",
+        is_verified=False,
+    )
 
     return aliencontact
 
 
 def create_invalid_instance() -> AlienContact:
-    try:
-        aliencontact = AlienContact(
-            contact_id="AC_2024_001",
-            timestamp=datetime(2024, 1, 1),
-            location="Area 51, Nevada",
-            contact_type=ContactType.telepathic,
-            signal_strength=8.5,
-            duration_minutes=45,
-            witness_count=2,
-            message_received="Greetings from Zeta Reticuli",
-            is_verified=False,
-        )
-
-    except ValidationError as e:
-        for error in e.errors():
-            print(error["msg"])
-        sys.exit(1)
+    aliencontact = AlienContact(
+        contact_id="AC_2024_001",
+        timestamp=datetime(2024, 1, 1),
+        location="Area 51, Nevada",
+        contact_type=ContactType.telepathic,
+        signal_strength=8.5,
+        duration_minutes=45,
+        witness_count=2,
+        message_received="Greetings from Zeta Reticuli",
+        is_verified=False,
+    )
 
     return aliencontact
 
@@ -98,14 +85,34 @@ def show_info(aliencontact: AlienContact) -> None:
     )
 
 
-if __name__ == "__main__":
+def main() -> None:
     print("Alien Contact Log Validation")
     print("============================================")
     print("Valid contact report:")
-    aliencontact = create_instance()
+
+    try:
+        aliencontact = create_instance()
+
+    except ValidationError as e:
+        for error in e.errors():
+            print(error["msg"])
+        return
+
     show_info(aliencontact)
 
     print("\n===========================================")
     print("Expected validation error:")
-    aliencontact = create_invalid_instance()
-    show_info(aliencontact)
+
+    try:
+        invalid_aliencontact = create_invalid_instance()
+
+    except ValidationError as e:
+        for error in e.errors():
+            print(error["msg"])
+        return
+
+    show_info(invalid_aliencontact)
+
+
+if __name__ == "__main__":
+    main()

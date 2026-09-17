@@ -1,7 +1,6 @@
 from pydantic import BaseModel, Field, ValidationError
 from datetime import datetime
 from typing import Optional
-import sys
 
 
 class SpaceStation(BaseModel):
@@ -16,41 +15,31 @@ class SpaceStation(BaseModel):
 
 
 def create_instance() -> SpaceStation:
-    try:
-        spacestation = SpaceStation(
-            station_id="ISS001",
-            name="International Space Station",
-            crew_size=6,
-            power_level=85.5,
-            oxygen_level=92.3,
-            last_maintenance=datetime(2026, 9, 9),
-            is_operational=False,
-            notes="hello",
-        )
+    spacestation = SpaceStation(
+        station_id="ISS001",
+        name="International Space Station",
+        crew_size=6,
+        power_level=85.5,
+        oxygen_level=92.3,
+        last_maintenance=datetime(2026, 9, 9),
+        is_operational=False,
+        notes="hello",
+    )
 
-    except ValidationError as e:
-        for error in e.errors():
-            print(error["msg"])
-        sys.exit(1)
     return spacestation
 
 
 def create_invalid_instance() -> SpaceStation:
-    try:
-        spacestation = SpaceStation(
-            station_id="ISS001",
-            name="International Space Station",
-            crew_size=21,
-            power_level=85.5,
-            oxygen_level=92.3,
-            last_maintenance=datetime(2026, 9, 9),
-            is_operational=False,
-            notes=None,
-        )
-    except ValidationError as e:
-        for error in e.errors():
-            print(error["msg"])
-        sys.exit(1)
+    spacestation = SpaceStation(
+        station_id="ISS001",
+        name="International Space Station",
+        crew_size=21,
+        power_level=85.5,
+        oxygen_level=92.3,
+        last_maintenance=datetime(2026, 9, 9),
+        is_operational=False,
+        notes=None,
+    )
 
     return spacestation
 
@@ -73,15 +62,35 @@ def show_info(spacestation: SpaceStation) -> None:
         print(f"Notes:\n{spacestation.notes}")
 
 
-if __name__ == "__main__":
+def main() -> None:
 
     print("Space Station Data Validation")
     print("======================================")
     print("Valid station created:")
-    spacestation = create_instance()
+
+    try:
+        spacestation = create_instance()
+
+    except ValidationError as e:
+        for error in e.errors():
+            print(error["msg"])
+        return
+
     show_info(spacestation)
 
     print("\n======================================")
     print("Expected validation error")
-    invalid_spacestation = create_invalid_instance()
+
+    try:
+        invalid_spacestation = create_invalid_instance()
+
+    except ValidationError as e:
+        for error in e.errors():
+            print(error["msg"])
+        return
+
     show_info(invalid_spacestation)
+
+
+if __name__ == "__main__":
+    main()
