@@ -22,7 +22,6 @@ def create_instance() -> SpaceStation:
         power_level=85.5,
         oxygen_level=92.3,
         last_maintenance=datetime(2026, 9, 9),
-        is_operational=False,
         notes="hello",
     )
 
@@ -49,8 +48,8 @@ def show_info(spacestation: SpaceStation) -> None:
         f"ID: {spacestation.station_id}\n"
         f"Name: {spacestation.name}\n"
         f"Crew: {spacestation.crew_size} people\n"
-        f"Power: {spacestation.power_level} %\n"
-        f"Oxygen: {spacestation.oxygen_level} %"
+        f"Power: {spacestation.power_level}%\n"
+        f"Oxygen: {spacestation.oxygen_level}%"
     )
 
     if spacestation.is_operational is True:
@@ -65,7 +64,7 @@ def show_info(spacestation: SpaceStation) -> None:
 def main() -> None:
 
     print("Space Station Data Validation")
-    print("======================================")
+    print("========================================")
     print("Valid station created:")
 
     try:
@@ -78,8 +77,8 @@ def main() -> None:
 
     show_info(spacestation)
 
-    print("\n======================================")
-    print("Expected validation error")
+    print("\n========================================")
+    print("Expected validation error:")
 
     try:
         invalid_spacestation = create_invalid_instance()

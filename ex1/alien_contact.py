@@ -25,7 +25,7 @@ class AlienContact(BaseModel):
     @model_validator(mode="after")
     def check_business_rules(self) -> "AlienContact":
         if not self.contact_id.startswith("AC"):
-            raise ValueError("Contact ID must start with 'AC'")
+            raise ValueError('Contact ID must start with "AC" (Alien Contact)')
         if self.contact_type == ContactType.physical and not self.is_verified:
             raise ValueError(
                 "Physical contact reports must be verified"
@@ -36,7 +36,9 @@ class AlienContact(BaseModel):
                 "Telepathic contact requires at least 3 witnesses"
                 )
         if self.signal_strength > 7.0 and self.message_received is None:
-            raise ValueError("Strong signals should include received messages")
+            raise ValueError(
+                "Strong signals (> 7.0) should include received messages"
+                )
 
         return self
 
@@ -81,13 +83,13 @@ def show_info(aliencontact: AlienContact) -> None:
         f"Signal: {aliencontact.signal_strength}/10\n"
         f"Duration: {aliencontact.duration_minutes} minutes\n"
         f"Witnesses: {aliencontact.witness_count}\n"
-        f"Message: {aliencontact.message_received}\n"
+        f"Message: '{aliencontact.message_received}'"
     )
 
 
 def main() -> None:
     print("Alien Contact Log Validation")
-    print("============================================")
+    print("======================================")
     print("Valid contact report:")
 
     try:
@@ -95,12 +97,12 @@ def main() -> None:
 
     except ValidationError as e:
         for error in e.errors():
-            print(error["msg"])
+            print(error["msg"].removeprefix("Value error, "))
         return
 
     show_info(aliencontact)
 
-    print("\n===========================================")
+    print("\n======================================")
     print("Expected validation error:")
 
     try:
@@ -108,7 +110,7 @@ def main() -> None:
 
     except ValidationError as e:
         for error in e.errors():
-            print(error["msg"])
+            print(error["msg"].removeprefix("Value error, "))
         return
 
     show_info(invalid_aliencontact)

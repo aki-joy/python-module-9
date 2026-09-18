@@ -1,7 +1,6 @@
 from pydantic import BaseModel, Field, model_validator, ValidationError
 from enum import Enum
 from datetime import datetime
-import random
 
 
 class Rank(str, Enum):
@@ -36,12 +35,12 @@ class SpaceMission(BaseModel):
     def mission_validation_rules(self) -> "SpaceMission":
 
         if not self.mission_id.startswith("M"):
-            raise ValueError("Mission id has to start with 'M'")
+            raise ValueError('Mission ID must start with "M"')
 
         if (not any(m.rank in (Rank.captain, Rank.commander)
                     for m in self.crew)):
             raise ValueError(
-                "At least one captain or commander should be assigned"
+                "Mission must have at least one Commander or Captain"
                 )
 
         count = 0
@@ -50,11 +49,14 @@ class SpaceMission(BaseModel):
                 if member.years_experience >= 5:
                     count += 1
             if len(self.crew) / 2 > count:
-                raise ValueError("Long missions need more experienced crew ")
+                raise ValueError(
+                    "Long missions (> 365 days) need 50% experienced crew "
+                    "(5+ years)"
+                    )
 
         for member in self.crew:
             if not member.is_active:
-                raise ValueError("Some of members are inactive")
+                raise ValueError("All crew members must be active")
 
         return self
 
@@ -67,7 +69,7 @@ def create_crew(
         member_id="000",
         name=name,
         rank=rank,
-        age=random.randint(18, 80),
+        age=20,
         specialization=specialization,
         years_experience=experience,
         is_active=True,
@@ -80,7 +82,7 @@ def create_mission(crews: list[CrewMember]) -> SpaceMission:
     mission = SpaceMission(
         mission_id="M2024_MARS",
         mission_name="Mars Colony Establishment",
-        destination="MARS",
+        destination="Mars",
         launch_date=datetime.now(),
         duration_days=900,
         budget_millions=2500.0,
@@ -104,7 +106,7 @@ def show_info(mission: SpaceMission) -> None:
 
     for member in mission.crew:
         print(
-            f" - {member.name} ({member.rank.value}) - {member.specialization}"
+            f"- {member.name} ({member.rank.value}) - {member.specialization}"
         )
 
 
@@ -115,7 +117,7 @@ def main() -> None:
 
     try:
         crew1 = create_crew(
-            "Sarah Connor", Rank.commander, "Mission command", 10
+            "Sarah Connor", Rank.commander, "Mission Command", 1
             )
         crews.append(crew1)
         crew2 = create_crew("John Smith", Rank.lieutenant, "Navigation", 5)
@@ -125,26 +127,23 @@ def main() -> None:
 
     except ValidationError as e:
         for error in e.errors():
-            print(error["msg"])
+            print(error["msg"].removeprefix("Value error, "))
         return
 
-    print("=======================================")
-    print("Valid mission created")
+    print("=========================================")
+    print("Valid mission created:")
 
     try:
         mission = create_mission(crews)
 
     except ValidationError as e:
         for error in e.errors():
-            print(error["msg"])
-        return
-    except ValueError as e:
-        print(e)
+            print(error["msg"].removeprefix("Value error, "))
         return
 
     show_info(mission)
 
-    print("\n=======================================")
+    print("\n=========================================")
     print("Expected validation error:")
     crews.pop(0)
 
@@ -153,11 +152,7 @@ def main() -> None:
 
     except ValidationError as e:
         for error in e.errors():
-            print(error["msg"])
-        return
-
-    except ValueError as e:
-        print(e)
+            print(error["msg"].removeprefix("Value error, "))
         return
 
     show_info(invalid_mission)
